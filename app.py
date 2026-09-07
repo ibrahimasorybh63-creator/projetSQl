@@ -410,9 +410,9 @@ def afficher_panier():
     total = sum([p['sous_total'] for p in liste_flask])
     produits_similaires_liste = []
     if ids_produits:
-        dernier_id = int(ids_produits[-1])
+        ids_panier_int = [int(x) for x in ids_produits]
         similarites, ids = content_based.calculer_similarites(conn)
-        ids_recommandes = content_based.produits_similaires(dernier_id, similarites, ids, k=5)
+        ids_recommandes = content_based.produits_similaires_panier(ids_panier_int, similarites, ids, k=5)
 
         placeholders_reco = ",".join(["?"] * len(ids_recommandes))
         cur.execute(
@@ -486,7 +486,6 @@ def valider_commande():
     for produit_id,details in panier.items():
         cur.execute("INSERT INTO details_comm(quantite,prix_unitaire,commandes_id,produits_id) values(?,?,?,?);",(details['quantite'],details['prix'],id_commande,int(produit_id)))
     conn.commit()
-    conn.close()
     session['panier'] = {}
     session.modified = True
     message = jsonify({
@@ -494,6 +493,7 @@ def valider_commande():
             "commande_id":id_commande
         })
     recalculer_taux_vente(conn,30)
+    conn.close()
     return (message, 200)
 
 
@@ -644,7 +644,8 @@ def envoyer_mail():
 @app.route('/log_out',methods = ['GET'])
 def log_out():
     session.pop('id_client', None)
+    session.pop('panier',None)
     return redirect ('/')
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

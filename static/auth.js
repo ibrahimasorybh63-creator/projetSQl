@@ -59,7 +59,7 @@ if (confirmer_inscrip) {
         if (response.status === 200) {
             afficherToast(data.message,"succes")
             setTimeout(() => {
-                window.location.href = '/shop';
+                window.location.href = '/connexion';
             }, 2500);
             return;
         };

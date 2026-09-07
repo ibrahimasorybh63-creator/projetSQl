@@ -52,3 +52,15 @@ def recommandations_par_historique(client_id, conn, similarites, ids, k=8):
     ).fetchall()
     produits = sorted(produits_bruts,key=lambda p: produits_id.index(p[0]))
     return produits
+
+
+# Classe les produits non présents dans le panier selon leur meilleure similarité avec l'ensemble des produits du panier.
+def produits_similaires_panier(ids_panier, similarites, ids, k=5):
+    positions_panier = [ids.index(pid) for pid in ids_panier]
+    lignes_panier = similarites[positions_panier]
+    sim_max = np.max(lignes_panier, axis=0)
+    ordre_trie = np.argsort(sim_max, descending=True)
+    positions_valides = [pos for pos in ordre_trie if pos not in positions_panier]
+    positions_finales = positions_valides[:k]
+    produits_id = [ids[pos] for pos in positions_finales]
+    return produits_id
